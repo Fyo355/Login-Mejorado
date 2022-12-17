@@ -1,20 +1,26 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
-} from "../controllers/users.js";
-import { verifyUser, adminOnly, businessOnly } from "../middleware/auth.js";
+} = require("../controllers/users");
+const {
+  verifyUser,
+  adminOnly,
+  businessOnly,
+} = require("../middleware/auth.js");
+const { validateCreate } = require("../validators/users");
 
 const router = express.Router();
 
-router.get("/users", verifyUser);
-router.get("/admin", verifyUser, adminOnly);
-router.get("/business", verifyUser, businessOnly);
-router.post("/users", createUser);
+router
+  .get("/normal", verifyUser)
+  .get("/admin", verifyUser, adminOnly)
+  .get("/business", verifyUser, businessOnly)
+  .post("/users", validateCreate, createUser);
 //router.patch('/users/:id', verifyUser, adminOnly, updateUser);
 //router.delete('/users/:id', verifyUser, adminOnly, deleteUser);
 
-export default router;
+module.exports = router;

@@ -1,40 +1,63 @@
-import User from "../models/users.js";
-import argon2 from "argon2";
+const { matchedData } = require("express-validator");
+const { usersModel } = require("../models");
+const { compare } = require("../utils/handlePassword");
+const {
+  handleErrorResponse,
+  handleHttpError,
+} = require("../utils/handleError");
+const { tokenSign } = require("../utils/handleToken");
 
-export const Login = async (req, res) => {
-  const user = await User.findOne({
-    where: {
-      email: req.body.email,
-    },
-  });
-  if (!user) return res.status(404).json({ msg: "ERROR" });
-  const match = await argon2.verify(user.password, req.body.password);
-  if (!match) return res.status(400).json({ msg: "Wrong Password" });
-  req.session.userId = user.uuid;
-  const uuid = user.uuid;
-  const name = user.name;
-  const email = user.email;
-  const role = user.role;
-  res.status(200).json({ uuid, name, email, role });
+// TOKEN
+const Login = async (req, res) => {
+  try {
+    const body = matchedData(req);
+    const user = await usersModel.findOne({ where: { email: body.email } });
+    if (!user) {
+      handleErrorResponse(res, "USER_NOT_EXISTS", 404);
+      return;
+    }
+    const checkPassword = await compare(req.body.password, user.password);
+
+    if (!checkPassword) {
+      handleErrorResponse(res, "PASSWORD_INVALID", 402);
+      return;
+    }
+
+    const tokenJwt = await tokenSign(user);
+
+    /*
+    const data = {
+      token: tokenJwt,
+      user: user,
+    };
+    res.send({data})
+    */
+
+    res.send(user);
+  } catch (e) {
+    handleHttpError(res, e);
+  }
 };
 
-export const Me = async (req, res) => {
+const Me = async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ msg: "ERROR" });
   }
   const user = await User.findOne({
-    attributes: ["uuid", "name", "email", "role"],
+    attributes: ["id", "name", "email", "role"],
     where: {
-      uuid: req.session.userId,
+      id: req.session.userId,
     },
   });
   if (!user) return res.status(404).json({ msg: "ERROR" });
   res.status(200).json(user);
 };
 
-export const logOut = (req, res) => {
+const logOut = (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(400).json({ msg: "ERROR" });
     res.status(200).json({ msg: "Logout" });
   });
 };
+
+module.exports = { Login, Me, logOut };

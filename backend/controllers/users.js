@@ -1,28 +1,37 @@
-import User from "../models/users.js";
-import argon2 from "argon2";
+const { matchedData } = require("express-validator");
+const { usersModel } = require("../models");
+const { encrypt } = require("../utils/handlePassword");
+const {
+  handleHttpError,
+  handleErrorResponse,
+} = require("../utils/handleError");
 
-export const getUsers = (req, res) => {};
+const getUsers = (req, res) => {};
 
-export const getUserById = (req, res) => {};
+const getUserById = (req, res) => {};
 
-export const createUser = async (req, res) => {
-  const { name, email, password, confPassword, role } = req.body;
-  if (password !== confPassword)
-    return res.status(400).json({ msg: "Need PASSWORD" });
-  const hashPassword = await argon2.hash(password);
+const createUser = async (req, res) => {
   try {
-    await User.create({
-      name: name,
-      email: email,
-      password: hashPassword,
-      role: role,
+    const body = matchedData(req);
+    const checkIsExist = await usersModel.findOne({
+      where: { email: body.email },
     });
-    res.status(201).json({ msg: "REGISTRADO" });
-  } catch (error) {
-    res.status(400).json({ msg: error.message });
+    if (checkIsExist) {
+      handleErrorResponse(res, "USER_EXISTS", 401);
+      return;
+    }
+    const password = await encrypt(body.password);
+    const bodyInsert = { ...body, password };
+    const data = await usersModel.create(bodyInsert);
+
+    res.send({ data });
+  } catch (e) {
+    handleHttpError(res, e);
   }
 };
 
-export const updateUser = (req, res) => {};
+const updateUser = (req, res) => {};
 
-export const deleteUser = (req, res) => {};
+const deleteUser = (req, res) => {};
+
+module.exports = { getUsers, getUserById, createUser, updateUser, deleteUser };

@@ -1,12 +1,13 @@
-import express from "express";
-import cors from "cors";
-import SequelizeStore from "connect-session-sequelize";
-import db from "./config/Database.js";
-import session from "express-session";
-import dotenv from "dotenv";
-import UserRoute from "./routes/users.js";
-import AuthRoute from "./routes/auth.js";
-dotenv.config();
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+const SequelizeStore = require("connect-session-sequelize");
+const { db } = require("./config/Database");
+const { dbConnectMySQL } = require("./config/Database");
+const session = require("express-session");
+const authRoutes = require("./routes/auth");
+const usersRoutes = require("./routes/users");
 
 const app = express();
 
@@ -41,12 +42,14 @@ app.use(
 );
 
 app.use(express.json());
-app.use(UserRoute);
-app.use(AuthRoute);
 
 //store.sync();
 
 const PORT = process.env.PORT || 8080;
+app.use(authRoutes);
+app.use(usersRoutes);
 app.listen(PORT, () => {
   console.log("Server listening on port " + PORT);
 });
+
+dbConnectMySQL();
