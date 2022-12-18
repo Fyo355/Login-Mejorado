@@ -1,10 +1,8 @@
 const { verifyToken } = require("../utils/handleToken");
-const {
-  handleErrorResponse,
-  handleHttpError,
-} = require("../utils/handleError");
+const { handleErrorResponse } = require("../utils/handleError");
+const { usersModel } = require("../models");
 
-const checkAuth = async (req, res, next) => {
+const checkRoleAuth = (roles) => async (req, res, next) => {
   try {
     if (!req.headers.authorization) {
       handleErrorResponse(res, "NOT_ALLOW", 409);
@@ -12,14 +10,16 @@ const checkAuth = async (req, res, next) => {
     }
     const token = req.headers.authorization.split(" ").pop();
     const tokenData = await verifyToken(token);
-    if (tokenData._id) {
+    const userData = await usersModel.findById(tokenData._id);
+
+    if ([].concat(roles).includes(userData.role)) {
       next();
     } else {
-      handleErrorResponse(res, "NOT_ALLOW", 409);
+      handleErrorResponse(res, "NOT_ROL", 409);
     }
   } catch (e) {
     handleHttpError(res, e);
   }
 };
 
-module.exports = checkAuth;
+module.exports = checkRoleAuth;

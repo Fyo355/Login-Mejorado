@@ -23,5 +23,4 @@ const Users = db.define(
   }
 );
 
-//Users.sync();
 module.exports = Users;
