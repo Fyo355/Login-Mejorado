@@ -5,7 +5,7 @@ const {
   handleErrorResponse,
   handleHttpError,
 } = require("../utils/handleError");
-const { tokenSign } = require("../utils/handleToken");
+// const { tokenSign } = require("../utils/handleToken");
 
 const Login = async (req, res) => {
   try {
@@ -22,14 +22,17 @@ const Login = async (req, res) => {
       return;
     }
 
-    const tokenJwt = await tokenSign(user);
+    // const tokenJwt = await tokenSign(user);
 
+    /*
     const data = {
       token: tokenJwt,
       user,
     };
-
-    res.send({ token: data.token, ...data.user.dataValues });
+    */
+    
+    //res.send({ token: data.token, ...data.user.dataValues });
+    res.send(user);
   } catch (e) {
     handleHttpError(res, e);
   }
