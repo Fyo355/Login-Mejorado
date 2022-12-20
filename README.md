@@ -16,7 +16,7 @@
 ![image](https://user-images.githubusercontent.com/94048851/208270934-a6e2efc4-74f7-44cf-bc99-e9f1b2aa6c85.png)
 
 
-* Implementacion de JSON WEB TOKEN
+* Implementacion de JSON WEB TOKEN - NO UTILIZADO EN LUGAR DE EL SE UTILIZA "express-session" QUEDA IMPLEMENTADO POR SI SE QUIERE UTILIZAR EN EL FUTURO
 
 
 * Implementacion de modulos handle para:
